@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)file:///Users/roman/Downloads/life_hours_tracker_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Life Hours</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e0e;
+      --bg2: #1a1a1a;
+      --bg3: #242424;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.2);
+      --text: #f0f0f0;
+      --text2: #999;
+      --text3: #555;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+    #app { padding: 1.25rem 1rem; max-width: 480px; margin: 0 auto; }
+
+    .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; }
+    .header h1 { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+    .header-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+
+    .notif-btn {
+      font-size: 12px; padding: 6px 12px;
+      border-radius: 20px; border: 0.5px solid var(--border2);
+      background: transparent; color: var(--text2); cursor: pointer;
+      white-space: nowrap;
+    }
+    .notif-btn.active { background: rgba(52,199,89,0.15); color: #34c759; border-color: rgba(52,199,89,0.4); }
+    .notif-btn.denied { background: rgba(255,59,48,0.15); color: #ff3b30; border-color: rgba(255,59,48,0.4); }
+
+    .date-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .date-nav button { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); padding: 4px 10px; }
+    .date-label { font-size: 14px; font-weight: 500; color: var(--text); }
+
+    .progress-bar {
+      height: 6px; background: var(--bg3); border-radius: 3px;
+      margin-bottom: 1rem; overflow: hidden; display: flex; gap: 1px;
+    }
+    .progress-seg { height: 100%; }
+
+    .summary-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; min-height: 24px; }
+    .summary-pill {
+      font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500;
+    }
+
+    .hours-grid { display: flex; flex-direction: column; gap: 3px; }
+
+    .hour-section-label {
+      font-size: 10px; color: var(--text3); text-transform: uppercase;
+      letter-spacing: 0.08em; padding: 10px 0 4px;
+    }
+
+    .hour-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      background: var(--bg2); cursor: pointer;
+      transition: background 0.12s;
+    }
+    .hour-row:active { background: var(--bg3); }
+    .hour-row.current-hour { border: 1.5px solid rgba(10,132,255,0.6); background: rgba(10,132,255,0.07); }
+    .hour-row.quiet { opacity: 0.5; }
+
+    .hour-time { font-size: 12px; color: var(--text2); min-width: 54px; font-variant-numeric: tabular-nums; }
+    .hour-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .hour-label { font-size: 13px; color: var(--text); flex: 1; }
+    .hour-label.empty { color: var(--text3); font-style: italic; }
+    .hour-edit { font-size: 13px; color: var(--text3); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 100; backdrop-filter: blur(4px);
+    }
+    .modal {
+      background: #1c1c1e; border-radius: 20px 20px 0 0;
+      padding: 1.25rem 1.25rem 2rem;
+      width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
+    }
+    .modal-handle {
+      width: 36px; height: 4px; background: #444;
+      border-radius: 2px; margin: 0 auto 1rem;
+    }
+    .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
+    .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; }
+
+    .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .cat-btn {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 13px; border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      background: var(--bg3); cursor: pointer;
+      font-size: 13px; color: var(--text); text-align: left;
+      transition: background 0.1s;
+    }
+    .cat-btn:active { background: #2e2e2e; }
+    .cat-btn.selected { border-width: 2px; }
+    .cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; }
+    .btn-primary {
+      flex: 1; padding: 13px; border-radius: var(--radius);
+      border: none; background: #f0f0f0; color: #111;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .btn-secondary {
+      padding: 13px 18px; border-radius: var(--radius);
+      border: 0.5px solid var(--border2);
+      background: transparent; color: var(--text2);
+      font-size: 15px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div class="header">
+    <div>
+      <h1>life hours</h1>
+      <div class="header-sub" id="today-stats">13 of 24 hours logged</div>
+    </div>
+    <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()">Enable alerts</button>
+  </div>
+
+  <div class="date-nav">
+    <button onclick="changeDay(-1)">‹</button>
+    <span class="date-label" id="date-label">Today</span>
+    <button onclick="changeDay(1)">›</button>
+  </div>
+
+  <div class="progress-bar" id="progress-bar"><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(224, 96, 96);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div></div>
+  <div class="summary-strip" id="summary-strip"><div class="summary-pill" style="background: rgba(139, 143, 191, 0.157); color: rgb(139, 143, 191); border: 0.5px solid rgba(139, 143, 191, 0.333);">Sleep · 8h</div><div class="summary-pill" style="background: rgba(107, 200, 239, 0.157); color: rgb(107, 200, 239); border: 0.5px solid rgba(107, 200, 239, 0.333);">Relaxation/Leisure · 4h</div><div class="summary-pill" style="background: rgba(224, 96, 96, 0.157); color: rgb(224, 96, 96); border: 0.5px solid rgba(224, 96, 96, 0.333);">Work · 1h</div></div>
+  <div class="hours-grid" id="hours-grid"><div class="hour-section-label">overnight</div><div class="hour-row quiet"><div class="hour-time">12:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">1:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">2:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">3:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">4:00am</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">5:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">6:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-section-label">morning – evening</div><div class="hour-row"><div class="hour-time">7:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row"><div class="hour-time">8:00am</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-row current-hour"><div class="hour-time">9:00am</div><div class="hour-dot" style="background: rgb(224, 96, 96);"></div><div class="hour-label">Work</div><div class="hour-edit">✎</div></div><div class="hour-row"><div class="hour-time">10:00am</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">11:00am</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">12:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">1:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">2:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">3:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">4:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">5:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">6:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">7:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">8:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">9:00pm</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-row"><div class="hour-time">10:00pm</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-section-label">late night</div><div class="hour-row quiet"><div class="hour-time">11:00pm</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div></div>
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none;" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">What are you doing?</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="cat-grid" id="cat-grid"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModalDirect()">Cancel</button>
+      <button class="btn-primary" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATEGORIES = [
+  { id: 'EDUCATION',      label: 'Education',         color: '#F4C166' },
+  { id: 'FRIENDS_FAMILY', label: 'Friends/Family',     color: '#5DC5A5' },
+  { id: 'HEALTH',         label: 'Health',             color: '#85B7EB' },
+  { id: 'HOBBIES',        label: 'Hobbies & Skills',   color: '#CFCA5A' },
+  { id: 'MAINTENANCE',    label: 'Maintenance',        color: '#40BF95' },
+  { id: 'PARTNER',        label: 'Partner',            color: '#C49BE8' },
+  { id: 'RELAXATION',     label: 'Relaxation/Leisure', color: '#6BC8EF' },
+  { id: 'SLEEP',          label: 'Sleep',              color: '#8B8FBF' },
+  { id: 'TRAVEL',         label: 'Travel',             color: '#F47AA0' },
+  { id: 'WASTE',          label: 'Waste',              color: '#C4A266' },
+  { id: 'WORK',           label: 'Work',               color: '#E06060' },
+];
+
+const ALERT_START = 7;
+const ALERT_END = 23;
+const ALL_HOURS = Array.from({ length: 24 }, (_, i) => i);
+
+let currentOffset = 0;
+let selectedHour = null;
+let pendingCategory = null;
+let notifEnabled = false;
+let notifTimer = null;
+
+function getDateKey(offset = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+}
+function loadDay(offset) {
+  const raw = localStorage.getItem('lh_' + getDateKey(offset));
+  return raw ? JSON.parse(raw) : {};
+}
+function saveDay(offset, data) {
+  localStorage.setItem('lh_' + getDateKey(offset), JSON.stringify(data));
+}
+function formatHour(h) {
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return h12 + ':00' + ampm;
+}
+function formatDate(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  if (offset === 0) return 'Today';
+  if (offset === -1) return 'Yesterday';
+  if (offset === 1) return 'Tomorrow';
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+function getCurrentHour() { return new Date().getHours(); }
+
+function render() {
+  const data = loadDay(currentOffset);
+  const now = getCurrentHour();
+
+  document.getElementById('date-label').textContent = formatDate(currentOffset);
+  const logged = Object.keys(data).length;
+  document.getElementById('today-stats').textContent = logged + ' of 24 hours logged';
+
+  // Summary pills
+  const countByCat = {};
+  Object.values(data).forEach(c => { countByCat[c] = (countByCat[c] || 0) + 1; });
+  const strip = document.getElementById('summary-strip');
+  strip.innerHTML = '';
+  Object.entries(countByCat).sort((a, b) => b[1] - a[1]).forEach(([cat, cnt]) => {
+    const def = CATEGORIES.find(c => c.id === cat);
+    if (!def) return;
+    const pill = document.createElement('div');
+    pill.className = 'summary-pill';
+    pill.style.background = def.color + '28';
+    pill.style.color = def.color;
+    pill.style.border = '0.5px solid ' + def.color + '55';
+    pill.textContent = def.label + ' · ' + cnt + 'h';
+    strip.appendChild(pill);
+  });
+
+  // Progress bar
+  const bar = document.getElementById('progress-bar');
+  bar.innerHTML = '';
+  ALL_HOURS.forEach(h => {
+    const cat = data[h];
+    const seg = document.createElement('div');
+    seg.className = 'progress-seg';
+    seg.style.flex = '1';
+    seg.style.background = cat
+      ? (CATEGORIES.find(c => c.id === cat)?.color || '#ccc')
+      : 'rgba(255,255,255,0.06)';
+    bar.appendChild(seg);
+  });
+
+  // Hours grid
+  const grid = document.getElementById('hours-grid');
+  grid.innerHTML = '';
+
+  const sections = [
+    { label: 'overnight',          hours: [0,1,2,3,4,5,6] },
+    { label: 'morning – evening',  hours: Array.from({length: 16}, (_, i) => i + 7) },
+    { label: 'late night',         hours: [23] },
+  ];
+
+  sections.forEach(({ label, hours }) => {
+    const secLabel = document.createElement('div');
+    secLabel.className = 'hour-section-label';
+    secLabel.textContent = label;
+    grid.appendChild(secLabel);
+
+    hours.forEach(h => {
+      const cat = data[h];
+      const def = cat ? CATEGORIES.find(c => c.id === cat) : null;
+      const isQuiet = h < ALERT_START || h >= ALERT_END;
+
+      const row = document.createElement('div');
+      row.className = 'hour-row'
+        + (h === now && currentOffset === 0 ? ' current-hour' : '')
+        + (isQuiet ? ' quiet' : '');
+      row.onclick = () => openModal(h);
+
+      const timeEl = document.createElement('div');
+      timeEl.className = 'hour-time';
+      timeEl.textContent = formatHour(h);
+
+      const dot = document.createElement('div');
+      dot.className = 'hour-dot';
+      dot.style.background = def ? def.color : 'rgba(255,255,255,0.15)';
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'hour-label' + (def ? '' : ' empty');
+      labelEl.textContent = def ? def.label : 'Tap to log';
+
+      const edit = document.createElement('div');
+      edit.className = 'hour-edit';
+      edit.textContent = def ? '✎' : '+';
+
+      row.appendChild(timeEl);
+      row.appendChild(dot);
+      row.appendChild(labelEl);
+      row.appendChild(edit);
+      grid.appendChild(row);
+    });
+  });
+}
+
+function openModal(hour) {
+  selectedHour = hour;
+  pendingCategory = null;
+  const data = loadDay(currentOffset);
+  const existing = data[hour];
+
+  document.getElementById('modal-title').textContent = 'What are you doing?';
+  document.getElementById('modal-sub').textContent = formatHour(hour) + ' – ' + formatDate(currentOffset);
+
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (existing === cat.id ? ' selected' : '');
+    if (existing === cat.id) {
+      btn.style.borderColor = cat.color;
+      pendingCategory = cat.id;
+    }
+    btn.onclick = () => selectCategory(cat.id, btn);
+
+    const dot = document.createElement('div');
+    dot.className = 'cat-dot';
+    dot.style.background = cat.color;
+
+    btn.appendChild(dot);
+    btn.appendChild(document.createTextNode(cat.label));
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function selectCategory(id, btn) {
+  pendingCategory = id;
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.style.borderColor = '';
+    b.style.borderWidth = '';
+  });
+  const def = CATEGORIES.find(c => c.id === id);
+  btn.classList.add('selected');
+  btn.style.borderColor = def.color;
+  btn.style.borderWidth = '2px';
+}
+
+function saveEntry() {
+  if (pendingCategory === null) { closeModalDirect(); return; }
+  const data = loadDay(currentOffset);
+  data[selectedHour] = pendingCategory;
+  saveDay(currentOffset, data);
+  closeModalDirect();
+  render();
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal').style.display = 'none';
+  selectedHour = null;
+  pendingCategory = null;
+}
+
+function changeDay(dir) {
+  currentOffset = Math.max(-30, Math.min(0, currentOffset + dir));
+  render();
+}
+
+async function toggleNotifications() {
+  if (notifEnabled) {
+    notifEnabled = false;
+    clearTimeout(notifTimer);
+    updateNotifBtn();
+    return;
+  }
+  if (!('Notification' in window)) {
+    alert('Notifications not supported here. Add this page to your home screen first:\niPhone: Safari → Share → Add to Home Screen');
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    alert('Notifications are blocked. Go to Settings → Safari → [this site] and allow notifications.');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    notifEnabled = true;
+    updateNotifBtn();
+    scheduleNext();
+  } else {
+    const btn = document.getElementById('notif-btn');
+    btn.className = 'notif-btn denied';
+    btn.textContent = 'Blocked';
+  }
+}
+
+function updateNotifBtn() {
+  const btn = document.getElementById('notif-btn');
+  btn.className = notifEnabled ? 'notif-btn active' : 'notif-btn';
+  btn.textContent = notifEnabled ? 'Alerts on' : 'Enable alerts';
+}
+
+function scheduleNext() {
+  if (!notifEnabled) return;
+  const now = new Date();
+  const h = now.getHours();
+  const nextAlertTime = new Date();
+
+  if (h < ALERT_START) {
+    nextAlertTime.setHours(ALERT_START, 0, 5, 0);
+  } else if (h >= ALERT_END) {
+    nextAlertTime.setDate(nextAlertTime.getDate() + 1);
+    nextAlertTime.setHours(ALERT_START, 0, 5, 0);
+  } else {
+    nextAlertTime.setHours(h + 1, 0, 5, 0);
+  }
+
+  const ms = Math.max(1000, nextAlertTime - now);
+  notifTimer = setTimeout(() => {
+    fireNotif(nextAlertTime.getHours());
+    scheduleNext();
+  }, ms);
+}
+
+function fireNotif(hour) {
+  if (Notification.permission !== 'granted') return;
+  const n = new Notification('life hours', {
+    body: 'What are you doing at ' + formatHour(hour) + '?',
+    tag: 'life-hours-' + hour,
+    renotify: false,
+    requireInteraction: false,
+  });
+  n.onclick = () => { window.focus(); openModal(hour); n.close(); };
+}
+
+render();
+setInterval(() => { if (currentOffset === 0) render(); }, 60000);
+</script>
+
+
+</body></html>
