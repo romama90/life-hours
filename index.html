@@ -1,157 +1,209 @@
 <!DOCTYPE html>
-<!-- saved from url=(0055)file:///Users/roman/Downloads/life_hours_tracker_1.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Life Hours</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0e0e0e;
-      --bg2: #1a1a1a;
-      --bg3: #242424;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.2);
-      --text: #f0f0f0;
-      --text2: #999;
-      --text3: #555;
-      --radius: 10px;
-      --radius-lg: 14px;
+      --bg: #0e0e0e; --bg2: #1a1a1a; --bg3: #242424;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --text: #f0f0f0; --text2: #999; --text3: #555;
+      --radius: 10px; --radius-lg: 14px;
     }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; padding-bottom: 5rem; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      min-height: 100vh;
-      padding-bottom: 2rem;
-    }
+    /* Setup screen */
+    #setup-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; }
+    #setup-screen h1 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    #setup-screen > p { font-size: 14px; color: var(--text2); margin-bottom: 2rem; line-height: 1.6; }
+    .setup-step { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; width: 100%; max-width: 400px; text-align: left; }
+    .setup-step h3 { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .setup-step p { font-size: 13px; color: var(--text2); margin-bottom: 10px; line-height: 1.5; }
+    .setup-step code { font-size: 11px; background: var(--bg3); padding: 8px 10px; border-radius: 6px; display: block; word-break: break-all; color: #85B7EB; margin-bottom: 8px; white-space: pre-wrap; }
+    .setup-input { width: 100%; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; outline: none; margin-bottom: 8px; }
+    .setup-input:focus { border-color: rgba(255,255,255,0.4); }
+    .btn-setup { width: 100%; max-width: 400px; padding: 14px; background: #f0f0f0; color: #111; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
 
-    #app { padding: 1.25rem 1rem; max-width: 480px; margin: 0 auto; }
+    /* Main app */
+    #main-app { display: none; }
+    #app { padding: 1.25rem 1rem 0; max-width: 480px; margin: 0 auto; }
 
+    /* Tab bar */
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: rgba(14,14,14,0.96); border-top: 0.5px solid var(--border); backdrop-filter: blur(10px); z-index: 50; }
+    .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0 14px; cursor: pointer; color: var(--text3); font-size: 10px; gap: 4px; border: none; background: none; }
+    .tab-item.active { color: #f0f0f0; }
+    .tab-icon { font-size: 20px; line-height: 1; }
+
+    /* Header */
     .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; }
     .header h1 { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
     .header-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
-
-    .notif-btn {
-      font-size: 12px; padding: 6px 12px;
-      border-radius: 20px; border: 0.5px solid var(--border2);
-      background: transparent; color: var(--text2); cursor: pointer;
-      white-space: nowrap;
-    }
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid var(--border2); color: var(--text2); white-space: nowrap; }
+    .sync-status.synced { color: #34c759; border-color: rgba(52,199,89,0.4); background: rgba(52,199,89,0.1); }
+    .sync-status.syncing { color: #FFD60A; border-color: rgba(255,214,10,0.4); background: rgba(255,214,10,0.1); }
+    .sync-status.error { color: #ff3b30; border-color: rgba(255,59,48,0.4); background: rgba(255,59,48,0.1); }
+    .notif-btn { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; }
     .notif-btn.active { background: rgba(52,199,89,0.15); color: #34c759; border-color: rgba(52,199,89,0.4); }
-    .notif-btn.denied { background: rgba(255,59,48,0.15); color: #ff3b30; border-color: rgba(255,59,48,0.4); }
 
+    /* Date nav */
     .date-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
     .date-nav button { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); padding: 4px 10px; }
     .date-label { font-size: 14px; font-weight: 500; color: var(--text); }
 
-    .progress-bar {
-      height: 6px; background: var(--bg3); border-radius: 3px;
-      margin-bottom: 1rem; overflow: hidden; display: flex; gap: 1px;
-    }
+    /* Progress */
+    .progress-bar { height: 6px; background: var(--bg3); border-radius: 3px; margin-bottom: 1rem; overflow: hidden; display: flex; gap: 1px; }
     .progress-seg { height: 100%; }
 
+    /* Pills */
     .summary-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; min-height: 24px; }
-    .summary-pill {
-      font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500;
-    }
+    .summary-pill { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
 
+    /* Hours */
     .hours-grid { display: flex; flex-direction: column; gap: 3px; }
-
-    .hour-section-label {
-      font-size: 10px; color: var(--text3); text-transform: uppercase;
-      letter-spacing: 0.08em; padding: 10px 0 4px;
-    }
-
-    .hour-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 12px; border-radius: var(--radius);
-      border: 0.5px solid var(--border);
-      background: var(--bg2); cursor: pointer;
-      transition: background 0.12s;
-    }
+    .hour-section-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 0 4px; }
+    .hour-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--bg2); cursor: pointer; transition: background 0.12s; }
     .hour-row:active { background: var(--bg3); }
     .hour-row.current-hour { border: 1.5px solid rgba(10,132,255,0.6); background: rgba(10,132,255,0.07); }
     .hour-row.quiet { opacity: 0.5; }
-
     .hour-time { font-size: 12px; color: var(--text2); min-width: 54px; font-variant-numeric: tabular-nums; }
     .hour-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .hour-label { font-size: 13px; color: var(--text); flex: 1; }
     .hour-label.empty { color: var(--text3); font-style: italic; }
+    .hour-auto { font-size: 10px; color: var(--text3); margin-right: 2px; }
     .hour-edit { font-size: 13px; color: var(--text3); }
 
     /* Modal */
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: flex; align-items: flex-end; justify-content: center;
-      z-index: 100; backdrop-filter: blur(4px);
-    }
-    .modal {
-      background: #1c1c1e; border-radius: 20px 20px 0 0;
-      padding: 1.25rem 1.25rem 2rem;
-      width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
-    }
-    .modal-handle {
-      width: 36px; height: 4px; background: #444;
-      border-radius: 2px; margin: 0 auto 1rem;
-    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+    .modal { background: #1c1c1e; border-radius: 20px 20px 0 0; padding: 1.25rem 1.25rem 2.5rem; width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; }
+    .modal-handle { width: 36px; height: 4px; background: #444; border-radius: 2px; margin: 0 auto 1rem; }
     .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
     .modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; }
-
     .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .cat-btn {
-      display: flex; align-items: center; gap: 9px;
-      padding: 11px 13px; border-radius: var(--radius);
-      border: 0.5px solid var(--border);
-      background: var(--bg3); cursor: pointer;
-      font-size: 13px; color: var(--text); text-align: left;
-      transition: background 0.1s;
-    }
-    .cat-btn:active { background: #2e2e2e; }
+    .cat-btn { display: flex; align-items: center; gap: 9px; padding: 11px 13px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--bg3); cursor: pointer; font-size: 13px; color: var(--text); text-align: left; }
     .cat-btn.selected { border-width: 2px; }
     .cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-
     .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; }
-    .btn-primary {
-      flex: 1; padding: 13px; border-radius: var(--radius);
-      border: none; background: #f0f0f0; color: #111;
-      font-size: 15px; font-weight: 600; cursor: pointer;
-    }
-    .btn-secondary {
-      padding: 13px 18px; border-radius: var(--radius);
-      border: 0.5px solid var(--border2);
-      background: transparent; color: var(--text2);
-      font-size: 15px; cursor: pointer;
-    }
+    .btn-primary { flex: 1; padding: 13px; border-radius: var(--radius); border: none; background: #f0f0f0; color: #111; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-secondary { padding: 13px 18px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); font-size: 15px; cursor: pointer; }
+
+    /* Analytics */
+    #analytics-tab { display: none; padding: 1.25rem 1rem 0; max-width: 480px; margin: 0 auto; }
+    .analytics-header { margin-bottom: 1.25rem; }
+    .analytics-header h2 { font-size: 20px; font-weight: 600; }
+    .analytics-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+    .range-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+    .range-tab { padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; }
+    .range-tab.active { background: #f0f0f0; color: #111; border-color: transparent; font-weight: 600; }
+    .pie-wrap { display: flex; align-items: center; justify-content: center; margin: 0.5rem 0 1.5rem; }
+    .legend { display: flex; flex-direction: column; gap: 6px; }
+    .legend-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--bg2); border-radius: var(--radius); border: 0.5px solid var(--border); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-label { font-size: 13px; flex: 1; }
+    .legend-hrs { font-size: 12px; color: var(--text2); }
+    .legend-pct { font-size: 13px; font-weight: 600; min-width: 40px; text-align: right; }
+    .no-data { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 14px; line-height: 1.6; }
   </style>
 </head>
 <body>
 
-<div id="app">
-  <div class="header">
-    <div>
-      <h1>life hours</h1>
-      <div class="header-sub" id="today-stats">13 of 24 hours logged</div>
-    </div>
-    <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()">Enable alerts</button>
+<!-- ── Setup Screen ── -->
+<div id="setup-screen">
+  <h1>life hours</h1>
+  <p>Your data syncs to the cloud so it follows you everywhere.<br>Takes ~3 minutes to set up once.</p>
+
+  <div class="setup-step">
+    <h3>Step 1 — Create free Supabase account</h3>
+    <p>Go to <strong>supabase.com</strong> → New project → any name.<br>Then go to <strong>Settings → API</strong> and copy your <strong>Project URL</strong> and <strong>anon public</strong> key.</p>
   </div>
 
-  <div class="date-nav">
-    <button onclick="changeDay(-1)">‹</button>
-    <span class="date-label" id="date-label">Today</span>
-    <button onclick="changeDay(1)">›</button>
+  <div class="setup-step">
+    <h3>Step 2 — Run this SQL</h3>
+    <p>In Supabase, open the <strong>SQL Editor</strong> and run:</p>
+    <code>create table hours (
+  id uuid default gen_random_uuid() primary key,
+  date text not null,
+  hour integer not null,
+  category text not null,
+  auto_filled boolean default false,
+  updated_at timestamptz default now(),
+  unique(date, hour)
+);
+alter table hours enable row level security;
+create policy "allow all" on hours for all using (true) with check (true);</code>
   </div>
 
-  <div class="progress-bar" id="progress-bar"><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(224, 96, 96);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgba(255, 255, 255, 0.06);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(107, 200, 239);"></div><div class="progress-seg" style="flex: 1 1 0%; background: rgb(139, 143, 191);"></div></div>
-  <div class="summary-strip" id="summary-strip"><div class="summary-pill" style="background: rgba(139, 143, 191, 0.157); color: rgb(139, 143, 191); border: 0.5px solid rgba(139, 143, 191, 0.333);">Sleep · 8h</div><div class="summary-pill" style="background: rgba(107, 200, 239, 0.157); color: rgb(107, 200, 239); border: 0.5px solid rgba(107, 200, 239, 0.333);">Relaxation/Leisure · 4h</div><div class="summary-pill" style="background: rgba(224, 96, 96, 0.157); color: rgb(224, 96, 96); border: 0.5px solid rgba(224, 96, 96, 0.333);">Work · 1h</div></div>
-  <div class="hours-grid" id="hours-grid"><div class="hour-section-label">overnight</div><div class="hour-row quiet"><div class="hour-time">12:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">1:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">2:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">3:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">4:00am</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">5:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row quiet"><div class="hour-time">6:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-section-label">morning – evening</div><div class="hour-row"><div class="hour-time">7:00am</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div><div class="hour-row"><div class="hour-time">8:00am</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-row current-hour"><div class="hour-time">9:00am</div><div class="hour-dot" style="background: rgb(224, 96, 96);"></div><div class="hour-label">Work</div><div class="hour-edit">✎</div></div><div class="hour-row"><div class="hour-time">10:00am</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">11:00am</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">12:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">1:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">2:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">3:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">4:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">5:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">6:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">7:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">8:00pm</div><div class="hour-dot" style="background: rgba(255, 255, 255, 0.15);"></div><div class="hour-label empty">Tap to log</div><div class="hour-edit">+</div></div><div class="hour-row"><div class="hour-time">9:00pm</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-row"><div class="hour-time">10:00pm</div><div class="hour-dot" style="background: rgb(107, 200, 239);"></div><div class="hour-label">Relaxation/Leisure</div><div class="hour-edit">✎</div></div><div class="hour-section-label">late night</div><div class="hour-row quiet"><div class="hour-time">11:00pm</div><div class="hour-dot" style="background: rgb(139, 143, 191);"></div><div class="hour-label">Sleep</div><div class="hour-edit">✎</div></div></div>
+  <div class="setup-step">
+    <h3>Step 3 — Paste your credentials</h3>
+    <input class="setup-input" id="input-url" placeholder="https://xxxxxxxxxxxx.supabase.co" />
+    <input class="setup-input" id="input-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+  </div>
+
+  <button class="btn-setup" onclick="connectSupabase()">Connect &amp; Start Tracking</button>
+  <p style="font-size:11px;color:var(--text3);margin-top:1rem;">Credentials saved only on your device.</p>
 </div>
 
+<!-- ── Main App ── -->
+<div id="main-app">
+
+  <!-- Log tab -->
+  <div id="app">
+    <div class="header">
+      <div>
+        <h1>life hours</h1>
+        <div class="header-sub" id="today-stats">Loading…</div>
+      </div>
+      <div class="header-right">
+        <span class="sync-status" id="sync-status">—</span>
+        <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()">Enable alerts</button>
+      </div>
+    </div>
+    <div class="date-nav">
+      <button onclick="changeDay(-1)">‹</button>
+      <span class="date-label" id="date-label"></span>
+      <button onclick="changeDay(1)">›</button>
+    </div>
+    <div class="progress-bar" id="progress-bar"></div>
+    <div class="summary-strip" id="summary-strip"></div>
+    <div class="hours-grid" id="hours-grid"></div>
+  </div>
+
+  <!-- Analytics tab -->
+  <div id="analytics-tab">
+    <div class="analytics-header">
+      <h2>your time</h2>
+      <p class="analytics-sub" id="analytics-sub">Where your hours went</p>
+    </div>
+    <div class="range-tabs">
+      <button class="range-tab active" onclick="setRange('week',this)">Week</button>
+      <button class="range-tab" onclick="setRange('month',this)">Month</button>
+      <button class="range-tab" onclick="setRange('year',this)">Year</button>
+      <button class="range-tab" onclick="setRange('all',this)">All time</button>
+    </div>
+    <div class="pie-wrap">
+      <canvas id="pie-chart" width="260" height="260"></canvas>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-item active" id="tab-log" onclick="switchTab('log')">
+      <span class="tab-icon">⏱</span>
+      <span>Log</span>
+    </button>
+    <button class="tab-item" id="tab-analytics" onclick="switchTab('analytics')">
+      <span class="tab-icon">◑</span>
+      <span>Insights</span>
+    </button>
+  </div>
+</div>
+
+<!-- Log Modal -->
 <div class="modal-overlay" id="modal" style="display:none;" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
@@ -180,271 +232,416 @@ const CATEGORIES = [
   { id: 'WORK',           label: 'Work',               color: '#E06060' },
 ];
 
-const ALERT_START = 7;
-const ALERT_END = 23;
+const ALERT_START = 7, ALERT_END = 23;
 const ALL_HOURS = Array.from({ length: 24 }, (_, i) => i);
 
+let SB_URL = '', SB_KEY = '';
 let currentOffset = 0;
 let selectedHour = null;
 let pendingCategory = null;
 let notifEnabled = false;
 let notifTimer = null;
+let currentTab = 'log';
+let currentRange = 'week';
+let cache = {}; // { 'YYYY-MM-DD': { hour: { category, auto_filled } } }
+
+// ─── Supabase setup ───────────────────────────────────────────────
+
+function connectSupabase() {
+  const url = document.getElementById('input-url').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('input-key').value.trim();
+  if (!url || !key) { alert('Please fill in both fields.'); return; }
+  localStorage.setItem('lh_sb_url', url);
+  localStorage.setItem('lh_sb_key', key);
+  SB_URL = url; SB_KEY = key;
+  initApp();
+}
+
+function initApp() {
+  SB_URL = (localStorage.getItem('lh_sb_url') || '').replace(/\/$/, '');
+  SB_KEY = localStorage.getItem('lh_sb_key') || '';
+  if (!SB_URL || !SB_KEY) {
+    document.getElementById('setup-screen').style.display = 'flex';
+    document.getElementById('main-app').style.display = 'none';
+    return;
+  }
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  loadFromCloud().then(() => { autoFill(); render(); });
+}
+
+// ─── Supabase API ─────────────────────────────────────────────────
+
+async function sbFetch(path, opts = {}) {
+  const headers = {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json',
+    ...(opts.headers || {})
+  };
+  const res = await fetch(SB_URL + '/rest/v1/' + path, { ...opts, headers });
+  if (!res.ok) throw new Error(await res.text());
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function loadFromCloud() {
+  setSyncStatus('syncing');
+  try {
+    const since = getDateKey(-365);
+    const rows = await sbFetch('hours?date=gte.' + since + '&order=date.asc,hour.asc', {
+      headers: { 'Prefer': 'return=representation' }
+    });
+    if (rows && rows.length) {
+      rows.forEach(r => {
+        if (!cache[r.date]) cache[r.date] = {};
+        cache[r.date][r.hour] = { category: r.category, auto_filled: r.auto_filled };
+      });
+    }
+    setSyncStatus('synced');
+  } catch (e) {
+    console.error('Load error', e);
+    setSyncStatus('error');
+  }
+}
+
+async function upsertHour(dateKey, hour, category, autoFilled) {
+  setSyncStatus('syncing');
+  try {
+    await sbFetch('hours', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ date: dateKey, hour, category, auto_filled: autoFilled, updated_at: new Date().toISOString() })
+    });
+    setSyncStatus('synced');
+  } catch (e) {
+    console.error('Upsert error', e);
+    setSyncStatus('error');
+  }
+}
+
+function setSyncStatus(state) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const map = { syncing: ['Syncing…', 'syncing'], synced: ['Synced ✓', 'synced'], error: ['Sync error', 'error'] };
+  const [text, cls] = map[state] || ['—', ''];
+  el.textContent = text;
+  el.className = 'sync-status ' + cls;
+}
+
+// ─── Date helpers ─────────────────────────────────────────────────
 
 function getDateKey(offset = 0) {
   const d = new Date();
   d.setDate(d.getDate() + offset);
-  return d.toISOString().split('T')[0];
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function loadDay(offset) {
-  const raw = localStorage.getItem('lh_' + getDateKey(offset));
-  return raw ? JSON.parse(raw) : {};
+
+function loadDay(offset) { return cache[getDateKey(offset)] || {}; }
+
+function setHour(offset, hour, category, autoFilled = false) {
+  const key = getDateKey(offset);
+  if (!cache[key]) cache[key] = {};
+  cache[key][hour] = { category, auto_filled: autoFilled };
+  upsertHour(key, hour, category, autoFilled);
 }
-function saveDay(offset, data) {
-  localStorage.setItem('lh_' + getDateKey(offset), JSON.stringify(data));
-}
+
+function getCurrentHour() { return new Date().getHours(); }
+
 function formatHour(h) {
   const ampm = h >= 12 ? 'pm' : 'am';
   const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
   return h12 + ':00' + ampm;
 }
+
 function formatDate(offset) {
   const d = new Date();
   d.setDate(d.getDate() + offset);
-  if (offset === 0) return 'Today';
-  if (offset === -1) return 'Yesterday';
-  if (offset === 1) return 'Tomorrow';
+  const short = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (offset === 0) return 'Today · ' + short;
+  if (offset === -1) return 'Yesterday · ' + short;
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
-function getCurrentHour() { return new Date().getHours(); }
+
+// ─── Auto-fill ────────────────────────────────────────────────────
+
+function autoFill() {
+  const data = loadDay(0);
+  const now = getCurrentHour();
+  let lastCat = null;
+  for (let h = 0; h <= now; h++) {
+    if (data[h]) { lastCat = data[h].category; }
+    else if (lastCat) { setHour(0, h, lastCat, true); }
+  }
+}
+
+// ─── Render log ───────────────────────────────────────────────────
 
 function render() {
   const data = loadDay(currentOffset);
   const now = getCurrentHour();
-
   document.getElementById('date-label').textContent = formatDate(currentOffset);
-  const logged = Object.keys(data).length;
-  document.getElementById('today-stats').textContent = logged + ' of 24 hours logged';
+  document.getElementById('today-stats').textContent = Object.keys(data).length + ' of 24 hours logged';
 
-  // Summary pills
   const countByCat = {};
-  Object.values(data).forEach(c => { countByCat[c] = (countByCat[c] || 0) + 1; });
+  Object.values(data).forEach(e => { countByCat[e.category] = (countByCat[e.category]||0)+1; });
   const strip = document.getElementById('summary-strip');
   strip.innerHTML = '';
-  Object.entries(countByCat).sort((a, b) => b[1] - a[1]).forEach(([cat, cnt]) => {
-    const def = CATEGORIES.find(c => c.id === cat);
-    if (!def) return;
+  Object.entries(countByCat).sort((a,b)=>b[1]-a[1]).forEach(([cat, cnt]) => {
+    const def = CATEGORIES.find(c=>c.id===cat); if (!def) return;
     const pill = document.createElement('div');
     pill.className = 'summary-pill';
-    pill.style.background = def.color + '28';
-    pill.style.color = def.color;
-    pill.style.border = '0.5px solid ' + def.color + '55';
+    pill.style.cssText = `background:${def.color}28;color:${def.color};border:0.5px solid ${def.color}55`;
     pill.textContent = def.label + ' · ' + cnt + 'h';
     strip.appendChild(pill);
   });
 
-  // Progress bar
   const bar = document.getElementById('progress-bar');
   bar.innerHTML = '';
   ALL_HOURS.forEach(h => {
-    const cat = data[h];
+    const entry = data[h];
     const seg = document.createElement('div');
     seg.className = 'progress-seg';
     seg.style.flex = '1';
-    seg.style.background = cat
-      ? (CATEGORIES.find(c => c.id === cat)?.color || '#ccc')
-      : 'rgba(255,255,255,0.06)';
+    seg.style.background = entry ? (CATEGORIES.find(c=>c.id===entry.category)?.color||'#ccc') : 'rgba(255,255,255,0.06)';
     bar.appendChild(seg);
   });
 
-  // Hours grid
   const grid = document.getElementById('hours-grid');
   grid.innerHTML = '';
-
   const sections = [
-    { label: 'overnight',          hours: [0,1,2,3,4,5,6] },
-    { label: 'morning – evening',  hours: Array.from({length: 16}, (_, i) => i + 7) },
-    { label: 'late night',         hours: [23] },
+    { label: 'overnight',         hours: [0,1,2,3,4,5,6] },
+    { label: 'morning – evening', hours: Array.from({length:16},(_,i)=>i+7) },
+    { label: 'late night',        hours: [23] },
   ];
-
   sections.forEach(({ label, hours }) => {
-    const secLabel = document.createElement('div');
-    secLabel.className = 'hour-section-label';
-    secLabel.textContent = label;
-    grid.appendChild(secLabel);
-
+    const sec = document.createElement('div');
+    sec.className = 'hour-section-label';
+    sec.textContent = label;
+    grid.appendChild(sec);
     hours.forEach(h => {
-      const cat = data[h];
-      const def = cat ? CATEGORIES.find(c => c.id === cat) : null;
+      const entry = data[h];
+      const def = entry ? CATEGORIES.find(c=>c.id===entry.category) : null;
       const isQuiet = h < ALERT_START || h >= ALERT_END;
-
+      const isAuto = entry?.auto_filled;
       const row = document.createElement('div');
-      row.className = 'hour-row'
-        + (h === now && currentOffset === 0 ? ' current-hour' : '')
-        + (isQuiet ? ' quiet' : '');
+      row.className = 'hour-row' + (h===now&&currentOffset===0?' current-hour':'') + (isQuiet?' quiet':'');
       row.onclick = () => openModal(h);
 
-      const timeEl = document.createElement('div');
-      timeEl.className = 'hour-time';
-      timeEl.textContent = formatHour(h);
+      const time = document.createElement('div'); time.className='hour-time'; time.textContent=formatHour(h);
+      const dot = document.createElement('div'); dot.className='hour-dot'; dot.style.background=def?def.color:'rgba(255,255,255,0.15)';
+      const lbl = document.createElement('div'); lbl.className='hour-label'+(def?'':' empty'); lbl.textContent=def?def.label:'Tap to log';
+      const right = document.createElement('div'); right.style.cssText='display:flex;align-items:center;gap:4px;';
+      if (isAuto && def) { const a=document.createElement('span'); a.className='hour-auto'; a.textContent='auto'; right.appendChild(a); }
+      const ed = document.createElement('div'); ed.className='hour-edit'; ed.textContent=def?'✎':'+'; right.appendChild(ed);
 
-      const dot = document.createElement('div');
-      dot.className = 'hour-dot';
-      dot.style.background = def ? def.color : 'rgba(255,255,255,0.15)';
-
-      const labelEl = document.createElement('div');
-      labelEl.className = 'hour-label' + (def ? '' : ' empty');
-      labelEl.textContent = def ? def.label : 'Tap to log';
-
-      const edit = document.createElement('div');
-      edit.className = 'hour-edit';
-      edit.textContent = def ? '✎' : '+';
-
-      row.appendChild(timeEl);
-      row.appendChild(dot);
-      row.appendChild(labelEl);
-      row.appendChild(edit);
+      row.appendChild(time); row.appendChild(dot); row.appendChild(lbl); row.appendChild(right);
       grid.appendChild(row);
     });
   });
 }
 
-function openModal(hour) {
-  selectedHour = hour;
-  pendingCategory = null;
-  const data = loadDay(currentOffset);
-  const existing = data[hour];
+// ─── Modal ────────────────────────────────────────────────────────
 
+function openModal(hour) {
+  selectedHour = hour; pendingCategory = null;
+  const existing = loadDay(currentOffset)[hour]?.category;
   document.getElementById('modal-title').textContent = 'What are you doing?';
   document.getElementById('modal-sub').textContent = formatHour(hour) + ' – ' + formatDate(currentOffset);
-
-  const grid = document.getElementById('cat-grid');
-  grid.innerHTML = '';
+  const grid = document.getElementById('cat-grid'); grid.innerHTML = '';
   CATEGORIES.forEach(cat => {
     const btn = document.createElement('button');
-    btn.className = 'cat-btn' + (existing === cat.id ? ' selected' : '');
-    if (existing === cat.id) {
-      btn.style.borderColor = cat.color;
-      pendingCategory = cat.id;
-    }
+    btn.className = 'cat-btn' + (existing===cat.id?' selected':'');
+    if (existing===cat.id) { btn.style.borderColor=cat.color; btn.style.borderWidth='2px'; pendingCategory=cat.id; }
     btn.onclick = () => selectCategory(cat.id, btn);
-
-    const dot = document.createElement('div');
-    dot.className = 'cat-dot';
-    dot.style.background = cat.color;
-
-    btn.appendChild(dot);
-    btn.appendChild(document.createTextNode(cat.label));
+    const dot = document.createElement('div'); dot.className='cat-dot'; dot.style.background=cat.color;
+    btn.appendChild(dot); btn.appendChild(document.createTextNode(cat.label));
     grid.appendChild(btn);
   });
-
   document.getElementById('modal').style.display = 'flex';
 }
 
 function selectCategory(id, btn) {
   pendingCategory = id;
-  document.querySelectorAll('.cat-btn').forEach(b => {
-    b.classList.remove('selected');
-    b.style.borderColor = '';
-    b.style.borderWidth = '';
-  });
-  const def = CATEGORIES.find(c => c.id === id);
-  btn.classList.add('selected');
-  btn.style.borderColor = def.color;
-  btn.style.borderWidth = '2px';
+  document.querySelectorAll('.cat-btn').forEach(b=>{ b.classList.remove('selected'); b.style.borderColor=''; b.style.borderWidth=''; });
+  const def = CATEGORIES.find(c=>c.id===id);
+  btn.classList.add('selected'); btn.style.borderColor=def.color; btn.style.borderWidth='2px';
 }
 
 function saveEntry() {
-  if (pendingCategory === null) { closeModalDirect(); return; }
-  const data = loadDay(currentOffset);
-  data[selectedHour] = pendingCategory;
-  saveDay(currentOffset, data);
-  closeModalDirect();
-  render();
+  if (!pendingCategory) { closeModalDirect(); return; }
+  setHour(currentOffset, selectedHour, pendingCategory, false);
+  closeModalDirect(); render();
+  if (currentTab === 'analytics') renderAnalytics();
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modal')) closeModalDirect();
-}
-function closeModalDirect() {
-  document.getElementById('modal').style.display = 'none';
-  selectedHour = null;
-  pendingCategory = null;
+function closeModal(e) { if (e.target===document.getElementById('modal')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modal').style.display='none'; selectedHour=null; pendingCategory=null; }
+
+// ─── Navigation ───────────────────────────────────────────────────
+
+function changeDay(dir) { currentOffset = Math.max(-365, Math.min(0, currentOffset+dir)); render(); }
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('app').style.display = tab==='log'?'block':'none';
+  document.getElementById('analytics-tab').style.display = tab==='analytics'?'block':'none';
+  document.getElementById('tab-log').className = 'tab-item'+(tab==='log'?' active':'');
+  document.getElementById('tab-analytics').className = 'tab-item'+(tab==='analytics'?' active':'');
+  if (tab==='analytics') renderAnalytics();
 }
 
-function changeDay(dir) {
-  currentOffset = Math.max(-30, Math.min(0, currentOffset + dir));
-  render();
+// ─── Analytics ────────────────────────────────────────────────────
+
+function setRange(range, btn) {
+  currentRange = range;
+  document.querySelectorAll('.range-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAnalytics();
 }
+
+function renderAnalytics() {
+  const now = new Date();
+  const start = new Date();
+  if (currentRange==='week') start.setDate(now.getDate()-6);
+  else if (currentRange==='month') start.setDate(now.getDate()-29);
+  else if (currentRange==='year') start.setFullYear(now.getFullYear()-1);
+  else start.setFullYear(2000);
+
+  const counts = {}; let total = 0;
+  Object.entries(cache).forEach(([dateKey, hours]) => {
+    // Parse as local date
+    const [y,m,d] = dateKey.split('-').map(Number);
+    const date = new Date(y, m-1, d);
+    if (date < start || date > now) return;
+    Object.values(hours).forEach(entry => {
+      counts[entry.category] = (counts[entry.category]||0)+1;
+      total++;
+    });
+  });
+
+  const rangeLabels = { week:'Past 7 days', month:'Past 30 days', year:'Past year', all:'All time' };
+  document.getElementById('analytics-sub').textContent = rangeLabels[currentRange] + ' · ' + total + ' hours logged';
+
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const legend = document.getElementById('legend');
+
+  if (total === 0) {
+    clearPie();
+    legend.innerHTML = '<div class="no-data">No data logged yet for this period.<br>Start logging hours in the Log tab.</div>';
+    return;
+  }
+
+  drawPie(sorted, total);
+
+  legend.innerHTML = '';
+  sorted.forEach(([cat, hrs]) => {
+    const def = CATEGORIES.find(c=>c.id===cat); if (!def) return;
+    const pct = Math.round((hrs/total)*100);
+    const row = document.createElement('div'); row.className='legend-row';
+    row.innerHTML = `<div class="legend-dot" style="background:${def.color}"></div><div class="legend-label">${def.label}</div><div class="legend-hrs">${hrs}h</div><div class="legend-pct" style="color:${def.color}">${pct}%</div>`;
+    legend.appendChild(row);
+  });
+}
+
+function clearPie() {
+  const c = document.getElementById('pie-chart');
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+
+function drawPie(sorted, total) {
+  const canvas = document.getElementById('pie-chart');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2;
+  const outerR = Math.min(W,H)/2 - 6;
+  const innerR = outerR * 0.54;
+  ctx.clearRect(0,0,W,H);
+
+  let angle = -Math.PI/2;
+  sorted.forEach(([cat, hrs]) => {
+    const def = CATEGORIES.find(c=>c.id===cat);
+    const slice = (hrs/total)*2*Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,outerR,angle,angle+slice);
+    ctx.closePath();
+    ctx.fillStyle = def ? def.color : '#888';
+    ctx.fill();
+    angle += slice;
+  });
+
+  // Donut hole
+  ctx.beginPath(); ctx.arc(cx,cy,innerR,0,2*Math.PI);
+  ctx.fillStyle = '#0e0e0e'; ctx.fill();
+
+  // Center label
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='#f0f0f0'; ctx.font='700 26px -apple-system,sans-serif';
+  ctx.fillText(total+'h', cx, cy-9);
+  ctx.fillStyle='#555'; ctx.font='12px -apple-system,sans-serif';
+  ctx.fillText('logged', cx, cy+13);
+}
+
+// ─── Notifications ────────────────────────────────────────────────
 
 async function toggleNotifications() {
-  if (notifEnabled) {
-    notifEnabled = false;
-    clearTimeout(notifTimer);
-    updateNotifBtn();
-    return;
-  }
-  if (!('Notification' in window)) {
-    alert('Notifications not supported here. Add this page to your home screen first:\niPhone: Safari → Share → Add to Home Screen');
-    return;
-  }
-  if (Notification.permission === 'denied') {
-    alert('Notifications are blocked. Go to Settings → Safari → [this site] and allow notifications.');
-    return;
-  }
+  if (notifEnabled) { notifEnabled=false; clearTimeout(notifTimer); updateNotifBtn(); return; }
+  if (!('Notification' in window)) { alert('Add this page to your home screen first, then enable alerts.'); return; }
+  if (Notification.permission==='denied') { alert('Notifications blocked — enable in Settings for this site.'); return; }
   const perm = await Notification.requestPermission();
-  if (perm === 'granted') {
-    notifEnabled = true;
-    updateNotifBtn();
-    scheduleNext();
-  } else {
-    const btn = document.getElementById('notif-btn');
-    btn.className = 'notif-btn denied';
-    btn.textContent = 'Blocked';
-  }
+  if (perm==='granted') { notifEnabled=true; updateNotifBtn(); scheduleNext(); }
 }
 
 function updateNotifBtn() {
   const btn = document.getElementById('notif-btn');
-  btn.className = notifEnabled ? 'notif-btn active' : 'notif-btn';
-  btn.textContent = notifEnabled ? 'Alerts on' : 'Enable alerts';
+  btn.className = notifEnabled?'notif-btn active':'notif-btn';
+  btn.textContent = notifEnabled?'Alerts on':'Enable alerts';
 }
 
 function scheduleNext() {
   if (!notifEnabled) return;
-  const now = new Date();
-  const h = now.getHours();
-  const nextAlertTime = new Date();
-
-  if (h < ALERT_START) {
-    nextAlertTime.setHours(ALERT_START, 0, 5, 0);
-  } else if (h >= ALERT_END) {
-    nextAlertTime.setDate(nextAlertTime.getDate() + 1);
-    nextAlertTime.setHours(ALERT_START, 0, 5, 0);
-  } else {
-    nextAlertTime.setHours(h + 1, 0, 5, 0);
-  }
-
-  const ms = Math.max(1000, nextAlertTime - now);
-  notifTimer = setTimeout(() => {
-    fireNotif(nextAlertTime.getHours());
-    scheduleNext();
-  }, ms);
+  const now=new Date(), h=now.getHours(), next=new Date();
+  if (h<ALERT_START) next.setHours(ALERT_START,0,5,0);
+  else if (h>=ALERT_END) { next.setDate(next.getDate()+1); next.setHours(ALERT_START,0,5,0); }
+  else next.setHours(h+1,0,5,0);
+  notifTimer = setTimeout(() => { fireNotif(next.getHours()); scheduleNext(); }, Math.max(1000,next-now));
 }
 
 function fireNotif(hour) {
-  if (Notification.permission !== 'granted') return;
-  const n = new Notification('life hours', {
-    body: 'What are you doing at ' + formatHour(hour) + '?',
-    tag: 'life-hours-' + hour,
-    renotify: false,
-    requireInteraction: false,
-  });
-  n.onclick = () => { window.focus(); openModal(hour); n.close(); };
+  if (Notification.permission!=='granted') return;
+  localStorage.setItem('lh_pending_hour', hour);
+  const entry = loadDay(0)[hour];
+  const def = entry ? CATEGORIES.find(c=>c.id===entry.category) : null;
+  const body = def ? 'Auto-logged as ' + def.label + ' — tap to change' : 'What are you doing at ' + formatHour(hour) + '?';
+  const n = new Notification('life hours', { body, tag:'life-hours-'+hour, renotify:true });
+  n.onclick = () => { window.focus(); openModal(hour); localStorage.removeItem('lh_pending_hour'); n.close(); };
 }
 
-render();
-setInterval(() => { if (currentOffset === 0) render(); }, 60000);
+function checkPendingHour() {
+  const p = localStorage.getItem('lh_pending_hour');
+  if (p!==null) { localStorage.removeItem('lh_pending_hour'); setTimeout(()=>openModal(parseInt(p)),400); }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState==='visible') {
+    loadFromCloud().then(()=>{ autoFill(); render(); if(currentTab==='analytics') renderAnalytics(); });
+    checkPendingHour();
+  }
+});
+
+// ─── Boot ─────────────────────────────────────────────────────────
+
+let lastHour = getCurrentHour();
+setInterval(() => {
+  if (currentTab==='log' && currentOffset===0) {
+    const h = getCurrentHour();
+    if (h!==lastHour) { lastHour=h; autoFill(); }
+    render();
+  }
+}, 60000);
+
+initApp();
+checkPendingHour();
 </script>
-
-
-</body></html>
+</body>
+</html>
